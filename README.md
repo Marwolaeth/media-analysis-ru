@@ -25,7 +25,8 @@ There is a decent R package for this task: [RNewsflow](https://github.com/kasper
 Social media post allocation to a particular news subject:
 
 * based on unique tokens and ngrams;
-* based on machine learning algorithms (lasso regression [dictionaries](https://github.com/sfeuerriegel/SentimentAnalysis) etc.).
+* based on machine learning algorithms (lasso regression [dictionaries](https://github.com/sfeuerriegel/SentimentAnalysis) etc.);
+* based on Markov chains.
 
 ## Advanced tasks
 
