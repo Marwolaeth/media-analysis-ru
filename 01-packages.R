@@ -1,9 +1,10 @@
 if (!require (pacman)) install.packages('pacman')
 # Permanently required packages
+pacman::p_install_version('udpipe', '0.8.3')
 pacman::p_load(
   data.table,
-  tm,
   udpipe,
+  tm,
   purrr,
   stringr,
   lubridate,
