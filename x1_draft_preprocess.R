@@ -27,5 +27,6 @@ news[,
     ]
 str(news)
 
-df <- udpipe_annotate(udmod, news[, text], trace = 10) %>%
-  as.data.frame(detailed = TRUE)
+df <- udpipe(news[, text], syntagrus, trace = 10, parallel.cores = 8L) %>%
+  as.data.frame(detailed = TRUE) %>%
+  as.data.table()
