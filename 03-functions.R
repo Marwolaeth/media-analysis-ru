@@ -1,6 +1,6 @@
 strip_html <- function(s) {
   require(rvest)
-  html_text(read_html(s))
+  html_text(read_html(paste0('<body>', s, '</body>')))
 }
 
 # russian stopwords
