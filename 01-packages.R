@@ -13,6 +13,7 @@ pacman::p_load(
   compiler,
   tictoc,
   fst,
+  dplyr,
   update = TRUE
 )
 # Occasionally required packages
