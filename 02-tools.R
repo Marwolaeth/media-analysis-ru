@@ -2,9 +2,9 @@ syntagrus <- udpipe_load_model(
   'Tools/udpipe/Russian/russian-syntagrus-ud-2.0-170801.udpipe'
 )
 # Currently trying larger cross-language model
-udmod <- udpipe_load_model(
-  'Tools/udpipe/Cross/deep-ud-2.4-data.tgz'
-)
+# udmod <- udpipe_load_model(
+#   'Tools/udpipe/Cross/deep-ud-2.4-data.tgz'
+# )
 
 ####################
 # Train udpipe model

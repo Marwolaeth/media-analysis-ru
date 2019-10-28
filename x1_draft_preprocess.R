@@ -101,7 +101,7 @@ df[, term_weight := weight_terms(term_id), by = doc_id]
 # k <- 1L
 # sum(10 - ((0:k)^m * m - 0))
 
-(x <- df[doc_id == unique(doc_id)[111] & sentence_id == 4 & upos != 'PUNCT',
+(x <- df[doc_id == unique(doc_id)[111] & sentence_id %in% 4 & upos != 'PUNCT',
         token])
 
 (xw <- df[doc_id == unique(doc_id)[111] & sentence_id == 4 & upos != 'PUNCT',
@@ -140,3 +140,10 @@ data.frame(t, w, stringsAsFactors = F) %>% distinct()
 # ngrams(x = x, 2)
 
 ngrams <- df[, ]
+
+ls(envir = .GlobalEnv)
+
+rm(list = grep('^[a-z]$', ls(), value = TRUE))
+
+dfc <- copy(df)
+d <- df[doc_id == unique(doc_id)[111] & sentence_id %in% 1:4 & upos != 'PUNCT']

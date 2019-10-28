@@ -14,6 +14,7 @@ pacman::p_load(
   tictoc,
   fst,
   dplyr,
+  tidytext,
   update = TRUE
 )
 # Occasionally required packages
