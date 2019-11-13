@@ -32,7 +32,7 @@ tic()
 df <- udpipe(
   news[, .(doc_id, text)],
   syntagrus,
-  parallel.cores = 2L
+  parallel.cores = 8L
 ) %>%
   as.data.table()
 toc()
@@ -77,7 +77,9 @@ setkey(df, doc_id, term_id)
 #   fun_term  = df_term[, term_weight := weight_terms(term_id), by = doc_id]
 # )
 
+tic()
 df[, term_weight := weight_terms(term_id), by = doc_id]
+toc()
 
 # summary(df)
 # hist(df$term_weight, breaks = 30)
