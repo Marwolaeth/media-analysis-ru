@@ -78,8 +78,10 @@ setkey(df, doc_id, term_id)
 # )
 
 tic()
-df[, term_weight := weight_terms(term_id), by = doc_id]
+df[upos != 'PUNCT', term_weight := weight_terms(term_id), by = doc_id]
 toc()
+
+dt <- copy(df)
 
 # summary(df)
 # hist(df$term_weight, breaks = 30)
@@ -103,49 +105,74 @@ toc()
 # k <- 1L
 # sum(10 - ((0:k)^m * m - 0))
 
-(x <- df[doc_id == unique(doc_id)[111] & sentence_id %in% 4 & upos != 'PUNCT',
-        token])
-
-(xw <- df[doc_id == unique(doc_id)[111] & sentence_id == 4 & upos != 'PUNCT',
-         term_weight])
-skip_combn(x, m = 3, skip = 1) %>% map(~ paste(., collapse = ' ')) %>% reduce(c)
-
-m <- 3L
-k <- 2L
-l <- expand.grid(m = 1:m, k = 0:k, KEEP.OUT.ATTRS = FALSE) %>%
-  filter(m > 1 | k == 0)
-t <- map2(
-  l[[1]],
-  l[[2]],
-  ~ skip_combn(
-    x,
-    m = .x,
-    skip = .y
-  ) %>%
-    map(~ paste(., collapse = ' '))
-) %>%
-  unlist()
-
-w <- map2(
-  l[[1]],
-  l[[2]],
-  ~ skip_combn(
-    xw,
-    m = .x,
-    skip = .y
-  ) %>%
-    map(function(w) sum(w) / max(1, .x - 0))
-) %>%
-  unlist()
-data.frame(t, w, stringsAsFactors = F) %>% distinct()
-
-# ngrams(x = x, 2)
-
-ngrams <- df[, ]
-
-ls(envir = .GlobalEnv)
-
-rm(list = grep('^[a-z]$', ls(), value = TRUE))
+# (x <- df[doc_id == unique(doc_id)[111] & sentence_id %in% 4 & upos != 'PUNCT',
+#         token])
+# 
+# (xw <- df[doc_id == unique(doc_id)[111] & sentence_id == 4 & upos != 'PUNCT',
+#          term_weight])
+# skip_combn(x, m = 3, skip = 1) %>% map(~ paste(., collapse = ' ')) %>% reduce(c)
+# 
+# m <- 3L
+# k <- 2L
+# l <- expand.grid(m = 1:m, k = 0:k, KEEP.OUT.ATTRS = FALSE) %>%
+#   filter(m > 1 | k == 0)
+# t <- map2(
+#   l[[1]],
+#   l[[2]],
+#   ~ skip_combn(
+#     x,
+#     m = .x,
+#     skip = .y
+#   ) %>%
+#     map(~ paste(., collapse = ' '))
+# ) %>%
+#   unlist()
+# 
+# w <- map2(
+#   l[[1]],
+#   l[[2]],
+#   ~ skip_combn(
+#     xw,
+#     m = .x,
+#     skip = .y
+#   ) %>%
+#     map(function(w) sum(w) / max(1, .x - 0))
+# ) %>%
+#   unlist()
+# data.frame(t, w, stringsAsFactors = F) %>% distinct()
+# 
+# # ngrams(x = x, 2)
+# 
+# ngrams <- df[, ]
+# 
+# ls(envir = .GlobalEnv)
+# 
+# rm(list = grep('^[a-z]$', ls(), value = TRUE))
 
 dfc <- copy(df)
-d <- df[doc_id == unique(doc_id)[111] & sentence_id %in% 1:4 & upos != 'PUNCT']
+d <- copy(df)[doc_id == unique(doc_id)[c(1, 111)] & sentence_id %in% 1:4 & upos != 'PUNCT']
+
+
+d <- lazy_dt(d, key_by = c(doc_id, token_id))
+
+d <- d %>%
+  group_by()
+###########
+set.seed(1111)
+df <- data.frame(
+  doc    = rep(1L:5L, each = 5L),
+  term   = replicate(5, sample(letters, 5)) %>% reduce(c),
+  weight = log(rep(6L:2L, 5)),
+  stringsAsFactors = FALSE
+)
+df
+
+# d <- tibble(
+#   term = skip_ngrams(df$term),
+#   weight = skip_ngrams(df$weight, FUN = sum)
+# )
+# d
+# 
+# d2 <- df %>% mutate(weight = weight + lead(weight)) %>% select(-doc)
+# d2
+# d2$weight[1:10] == d$weight[1:10]

@@ -28,61 +28,61 @@ water_terms <- c(
   'SCONJ'  # подчинительный союз
 )
 
-skip_combn <- function (x, m, skip = NULL, ...) 
-{
-  stopifnot(length(m) == 1L, is.numeric(m))
-  if (m < 0) 
-    stop('m < 0', domain = NA)
-  if (is.numeric(x) && length(x) == 1L && x > 0 && trunc(x) == 
-      x) 
-    x <- seq_len(x)
-  n <- length(x)
-  if (n < m) 
-    stop('n < m', domain = NA)
-  if(is.null(skip)) skip <- n
-  x0 <- x
-  m <- as.integer(m)
-  e <- 0
-  h <- 0
-  a <- seq_len(m)
-  len.r <- length(r <- x[a])
-  count <- as.integer(
-    if(skip < 2) {
-      n * m^skip - m^(1 + skip) + 1
-    } else {
-      n * skip^m * 2
-    }
-  )
-  out <- vector('list', count)
-  out[[1L]] <- r
-  if (m > 0) {
-    i <- 2L
-    e <- max(0, m - m * skip)
-    h <- max(0, e - a[1])
-    nmmp1 <- n - m + 1L
-    while (a[1L] != nmmp1) {
-      if ((e < n - h) & (e - a[1L] < max(1, m * (skip - 1)))) {
-        h <- 1L
-        e <- a[m]
-        j <- 1L
-      }
-      else {
-        e <- a[m - h]
-        h <- h + 1L
-        j <- 1L:h
-      }
-      a[m - h + j] <- e + j
-      if(skip == 0) {
-        e <- a[m]
-        h <- e - a[1] 
-      }
-      r <- x[a]
-      out[[i]] <- r
-      i <- i + 1L
-    }
-  }
-  out[map_int(out, length) > 0L]
-}
+# skip_combn <- function (x, m, skip = NULL, ...) 
+# {
+#   stopifnot(length(m) == 1L, is.numeric(m))
+#   if (m < 0) 
+#     stop('m < 0', domain = NA)
+#   if (is.numeric(x) && length(x) == 1L && x > 0 && trunc(x) == 
+#       x) 
+#     x <- seq_len(x)
+#   n <- length(x)
+#   if (n < m) 
+#     stop('n < m', domain = NA)
+#   if(is.null(skip)) skip <- n
+#   x0 <- x
+#   m <- as.integer(m)
+#   e <- 0
+#   h <- 0
+#   a <- seq_len(m)
+#   len.r <- length(r <- x[a])
+#   count <- as.integer(
+#     if(skip < 2) {
+#       n * m^skip - m^(1 + skip) + 1
+#     } else {
+#       n * skip^m * 2
+#     }
+#   )
+#   out <- vector('list', count)
+#   out[[1L]] <- r
+#   if (m > 0) {
+#     i <- 2L
+#     e <- max(0, m - m * skip)
+#     h <- max(0, e - a[1])
+#     nmmp1 <- n - m + 1L
+#     while (a[1L] != nmmp1) {
+#       if ((e < n - h) & (e - a[1L] < max(1, m * (skip - 1)))) {
+#         h <- 1L
+#         e <- a[m]
+#         j <- 1L
+#       }
+#       else {
+#         e <- a[m - h]
+#         h <- h + 1L
+#         j <- 1L:h
+#       }
+#       a[m - h + j] <- e + j
+#       if(skip == 0) {
+#         e <- a[m]
+#         h <- e - a[1] 
+#       }
+#       r <- x[a]
+#       out[[i]] <- r
+#       i <- i + 1L
+#     }
+#   }
+#   out[map_int(out, length) > 0L]
+# }
 # skip_combn <- cmpfun(skip_combn)
 
 weight_terms <- function(
@@ -98,8 +98,8 @@ weight_terms <- function(
   term.pos = NULL
 ) {
   stopifnot(method %in% c('log', 'hyperbolic', 'log_hyperbolic'))
-  if (length(pos.weights)) {
-    if (is.null(term.pos) | is.na(term.pos)) {
+  if (length(pos.weights) & length(term.pos)) {
+    if (is.na(term.pos)) {
       weight <- 1
       warning(
         'Parts-of-speech are not specified: using default value',
@@ -119,6 +119,8 @@ weight_terms <- function(
     )
     weight <- weight_df[['weight']]
     rm(weight_df)
+  } else {
+    weight <- 1
   }
   if (method == 'log') {
     return(weight * log(rev(term.rank) + correction, base = base))
@@ -130,26 +132,145 @@ weight_terms <- function(
 }
 # weight_terms <- cmpfun(weight_terms)
 
-chop_ngrams <- function(
+# chop_ngrams <- function(
+#   x,
+#   ngram = 2L,
+#   skip  = 0L,
+#   FUN,
+#   ...
+# ) {
+#   sapply(
+#     skip_combn(
+#       x, m = ngram, skip = skip
+#     ),
+#     FUN,
+#     ...
+#   )
+# }
+# 
+# ngram_terms <- function(
+#   df,
+#   n = 1L:2L,
+#   k = 0L,
+#   token.var  = 'lemma',
+#   pos.var    = 'upos',
+#   use.weight = TRUE,
+#   weight.var = if (use.weight) {
+#     grep('weight', names(df), value = TRUE)[1]
+#   } else {
+#     NULL
+#   },
+#   correction   = 0,
+#   remove.stopw = FALSE,
+#   remove.water = FALSE,
+#   stopw    = NULL
+# ) {
+#   require(data.table)
+#   require(purrr)
+#   if (is.data.table(df)) {
+#     d <- copy(df)
+#   } else {
+#     d <- as.data.table(df)
+#     rm(df)
+#   }
+#   # && to ensure that the result of comparison is of length one
+#   if (use.weight && (is.na(weight.var) | is.null(weight.var))) {
+#     stop('Token weight variable is not specified and cannot be estimated')
+#   }
+#   if (remove.stopw) {
+#     if (is.null(stopw) || is.na(stopw)) {
+#       stopw <- tryCatch(
+#        get(grep('stopword', ls(envir = .GlobalEnv), value = TRUE)),
+#         error = function(e) {
+#           if (require(stopwords)) {
+#             stopwords::data_stopwords_stopwordsiso$ru
+#           } else if (require(tm)) {
+#             tm::stopwords(kind = 'ru')
+#           } else {
+#             stop('Stopword list is not specified and cannot be estimated')
+#           }
+#         }
+#       )
+#     }
+#     setkeyv(d, token.var)
+#     d <- d[!(d[[token.var]] %chin% stopw)]
+#     setkey(d, NULL)
+#   }
+#   if (remove.water) {
+#     d <- tryCatch(
+#       d[!(d[[pos.var]] %chin% water_terms)],
+#       error = function(e) d
+#     )
+#   }
+#   l <- as.data.table(
+#     expand.grid(n = n, k = k, KEEP.OUT.ATTRS = FALSE)
+#   )[n > 1 | k == 0]
+#   res <- l[
+#     , .(
+#       ngram = chop_ngrams(
+#         d[[token.var]],
+#         ngram = n,
+#         skip = k,
+#         FUN = paste,
+#         collapse = ' '
+#       )
+#     ),
+#     keyby = .(n, k)
+#   ]
+#   if (use.weight) {
+#     match_weights <- function(w, corr = 0, kw = 0L) {
+#       sum(w) / max(1, w - corr)
+#     }
+#     resw <- l[, .(weight = chop_ngrams(
+#       d[[weight.var]],
+#       ngram = n,
+#       skip = k,
+#       FUN = match_weights,
+#       corr = correction,
+#       kw = skip
+#     )),
+#     keyby = .(n, k)
+#     ]
+#     res <- res[resw, nomatch = 0]
+#   }
+# }
+
+ngram_terms <- function(
   x,
   ngram = 2L,
   skip  = 0L,
-  FUN,
+  FUN = function(x) paste(x, collapse = ' '),
   ...
 ) {
-  sapply(
-    skip_combn(
-      x, m = ngram, skip = skip
-    ),
-    FUN,
-    ...
-  )
+  require(textreuse)
+  require(purrr)
+  cl <- class(x)
+  x <- as.character(x)
+  res <- textreuse:::skip_ngrams(words = x, n = ngram, k = skip)
+  if (cl == 'character') {
+    return(res)
+  } else {
+    res <- res %>%
+      str_split(' ') %>%
+      map(function(z) {
+        class(z) <- cl
+        z
+      }) %>%
+      map(FUN, ...) %>%
+      unlist()
+    return(res)
+  }
 }
 
-ngram_terms <- function(
+match_weights <- function(w, corr = 0) {
+  sum(w) / max(1, length(w) - corr)
+}
+
+tokenise_skip_ngrams <- function(
   df,
   n = 1L:2L,
   k = 0L,
+  # id.var = 'doc_id',
   token.var  = 'lemma',
   pos.var    = 'upos',
   use.weight = TRUE,
@@ -159,76 +280,73 @@ ngram_terms <- function(
     NULL
   },
   correction   = 0,
-  remove.stopw = FALSE,
+  remove.stopterms = FALSE,
   remove.water = FALSE,
-  stopw    = NULL
+  stopterms   = NULL
 ) {
-  require(data.table)
-  require(purrr)
-  if (is.data.table(df)) {
-    d <- copy(df)
-  } else {
-    d <- as.data.table(df)
-    rm(df)
+  # stopifnot(id.var    %in% names(df))
+  token_var  <- which(names(df) %in% token.var)
+  weight_var <- which(names(df) %in% weight.var)
+  stopifnot(length(token_var))
+  if (remove.water & !(pos.var %in% names(df))) {
+    stop(sprintf('POS variable "%s" is not found', pos.var))
+  }
+  if (use.weight & !(length(weight_var))) {
+    stop(sprintf('Weight variable "%s" is not found', weight.var))
   }
   # && to ensure that the result of comparison is of length one
   if (use.weight && (is.na(weight.var) | is.null(weight.var))) {
     stop('Token weight variable is not specified and cannot be estimated')
   }
-  if (remove.stopw) {
-    if (is.null(stopw) || is.na(stopw)) {
-      stopw <- tryCatch(
-       get(grep('stopword', ls(envir = .GlobalEnv), value = TRUE)),
-        error = function(e) {
-          if (require(stopwords)) {
-            stopwords::data_stopwords_stopwordsiso$ru
-          } else if (require(tm)) {
-            tm::stopwords(kind = 'ru')
-          } else {
-            stop('Stopword list is not specified and cannot be estimated')
-          }
-        }
-      )
+  require(data.table)
+  require(tidyr)
+  require(purrr)
+  require(dtplyr)
+  require(compiler)
+  d <- lazy_dt(df)
+  rm(df)
+  if (remove.stopterms) {
+    if (is.null(stopterms) || is.na(stopterms)) {
+      local_stopterms <- grep('stopword', ls(envir = .GlobalEnv), value = TRUE)
+      if (length(local_stopterms)) {
+        stopterms <- get(local_stopterms)
+      } else if (require(stopwords)) {
+        stopterms <- stopwords::data_stopwords_stopwordsiso$ru
+      } else if (require(tm)) {
+        stopterms <- tm::stopwords(kind = 'ru')
+      } else {
+        stop('Stopword list is not specified and cannot be estimated')
+      }
     }
-    setkeyv(d, token.var)
-    d <- d[!(d[[token.var]] %chin% stopw)]
-    setkey(d, NULL)
+    d <- filter(d, !(get(token.var) %chin% stopterms))
   }
   if (remove.water) {
-    d <- tryCatch(
-      d[!(d[[pos.var]] %chin% water_terms)],
-      error = function(e) d
-    )
+    d <- filter(d, !(get(pos.var) %chin% water_terms))
   }
-  l <- as.data.table(
-    expand.grid(n = n, k = k, KEEP.OUT.ATTRS = FALSE)
-  )[n > 1 | k == 0]
-  res <- l[
-    , .(
-      ngram = chop_ngrams(
-        d[[token.var]],
+  l <- lazy_dt(
+    tidyr::expand_grid(n = n, k = k) %>% filter(n > 1 | k == 0)
+  ) %>%
+    group_by(n, k)
+  w <- l %>%
+    summarise(
+      weight = ngram_terms(
+        pull(d, weight_var),
         ngram = n,
         skip = k,
-        FUN = paste,
-        collapse = ' '
+        FUN = match_weights,
+        corr = correction
+      ) 
+    ) %>%
+    ungroup() %>%
+    pull(weight)
+  l <- l %>%
+    summarise(
+      term = ngram_terms(
+        pull(d, token_var),
+        ngram = n,
+        skip = k
       )
-    ),
-    keyby = .(n, k)
-  ]
-  if (use.weight) {
-    match_weights <- function(w, corr = 0, kw = 0L) {
-      sum(w) / max(1, w - corr)
-    }
-    resw <- l[, .(weight = chop_ngrams(
-      d[[weight.var]],
-      ngram = n,
-      skip = k,
-      FUN = match_weights,
-      corr = correction,
-      kw = skip
-    )),
-    keyby = .(n, k)
-    ]
-    res <- res[resw, nomatch = 0]
-  }
+    ) %>%
+    ungroup() %>%
+    mutate(weight = w)
 }
