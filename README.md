@@ -45,4 +45,4 @@ Social media post allocation to a particular news subject:
 * key words extraction ([Wierzbicka](https://books.google.ru/books/about/Understanding_Cultures_Through_Their_Key.html?id=Un0bAQAAIAAJ&redir_esc=y) and lasso regression);
 * judgement extraction;
 * value extraction;
-* cultural paradygm modelling.
+* cultural paradigm modelling.
